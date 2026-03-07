@@ -1,11 +1,15 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import { GameBoard } from './components/GameBoard'
 import { SetupScreen } from './components/SetupScreen'
 import { LeftSidebar, BottomBar } from './components/Sidebar'
 import { useGameStore } from './game/store'
 import { getPropertyDetailsSummary, getSpace } from './game/selectors'
-import { Celebration } from './components/Celebration'
+
+const Celebration = lazy(async () => {
+  const module = await import('./components/Celebration')
+  return { default: module.Celebration }
+})
 
 function App() {
   const {
@@ -20,9 +24,11 @@ function App() {
     acknowledgeCard,
   } = useGameStore()
 
-  const [toast, setToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ id: number; message: string } | null>(null)
   const logLengthRef = useRef(0)
+  const showToastTimerRef = useRef<number | undefined>(undefined)
   const toastTimerRef = useRef<number | undefined>(undefined)
+  const latestLogEntry = useMemo(() => game?.log.at(-1) ?? null, [game?.log])
 
   // Auto-advance movement
   useEffect(() => {
@@ -39,18 +45,33 @@ function App() {
 
   // Toast notifications for game log
   useEffect(() => {
-    if (!game || game.log.length === 0) return
+    if (!game || game.log.length === 0 || !latestLogEntry) return
     if (game.log.length <= logLengthRef.current) {
       logLengthRef.current = game.log.length
       return
     }
-    const latest = game.log[game.log.length - 1]
+    const nextToast = {
+      id: game.log.length,
+      message: latestLogEntry,
+    }
+
     logLengthRef.current = game.log.length
-    setToast(latest)
-    
-    clearTimeout(toastTimerRef.current)
-    toastTimerRef.current = window.setTimeout(() => setToast(null), 3000)
-  }, [game?.log.length])
+    window.clearTimeout(showToastTimerRef.current)
+    window.clearTimeout(toastTimerRef.current)
+    showToastTimerRef.current = window.setTimeout(() => {
+      setToast(nextToast)
+      toastTimerRef.current = window.setTimeout(() => setToast(null), 3000)
+    }, 0)
+
+    return () => {
+      window.clearTimeout(showToastTimerRef.current)
+    }
+  }, [game, latestLogEntry])
+
+  useEffect(() => () => {
+    window.clearTimeout(showToastTimerRef.current)
+    window.clearTimeout(toastTimerRef.current)
+  }, [])
 
   if (!game) {
     return (
@@ -65,6 +86,7 @@ function App() {
 
   const currentPlayer = game.players[game.currentPlayerIndex]
   const pendingPurchaseSpace = game.pendingPurchase ? getSpace(game.pendingPurchase.propertyId) : null
+  const winnerName = game.players.find((player) => player.id === game.winnerId)?.name
 
   return (
     <>
@@ -78,7 +100,7 @@ function App() {
 
       {toast && (
         <div className="toast glass nm-flat">
-          {toast}
+          {toast.message}
         </div>
       )}
 
@@ -130,12 +152,14 @@ function App() {
 
       {game.winnerId && (
         <>
-          <Celebration />
+          <Suspense fallback={null}>
+            <Celebration />
+          </Suspense>
           <div className="modal-overlay">
             <div className="modal-content glass nm-convex">
               <h2 className="modal-title">Game Over</h2>
               <div className="modal-body">
-                <p>{game.players.find(p => p.id === game.winnerId)?.name} wins!</p>
+                <p>{winnerName} wins!</p>
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn-nm btn-primary" onClick={clearSavedGame}>

@@ -688,7 +688,7 @@ export function payBail(state: GameState): GameState {
   return log(nextState, `${currentPlayer.name} paid $${state.settings.bailAmount} bail.`)
 }
 
-export function useGetOutOfJail(state: GameState): GameState {
+export function playGetOutOfJailCard(state: GameState): GameState {
   const currentPlayer = getCurrentPlayer(state)
   const cardDeck = currentPlayer.getOutOfJailCards[0]
 
@@ -722,7 +722,7 @@ export function advanceMovementOneStep(originalState: GameState): GameState {
     return state
   }
 
-  let nextPosition = (player.position + move.direction + BOARD_SIZE) % BOARD_SIZE
+  const nextPosition = (player.position + move.direction + BOARD_SIZE) % BOARD_SIZE
   let nextState = setPlayer(state, player.id, (current) => ({
     ...current,
     position: nextPosition,

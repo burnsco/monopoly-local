@@ -99,3 +99,17 @@ export function getPropertyDetailsSummary(state: GameState, propertyId: number):
 
   return space.name
 }
+
+export function getSpaceMoneyLabel(spaceIndex: number): string {
+  const space = getSpace(spaceIndex)
+
+  if ('price' in space) {
+    return `$${space.price}`
+  }
+
+  if (space.type === 'tax') {
+    return `$${space.amount}`
+  }
+
+  return ''
+}

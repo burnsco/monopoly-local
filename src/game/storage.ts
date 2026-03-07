@@ -2,12 +2,24 @@ import type { GameState } from './types'
 
 export const SAVE_KEY = 'monopoly-local-save'
 
+function getStorage(): Storage | null {
+  if (typeof window === 'undefined') {
+    return null
+  }
+
+  try {
+    return window.localStorage
+  } catch {
+    return null
+  }
+}
+
 export function saveGame(state: GameState): void {
-  localStorage.setItem(SAVE_KEY, JSON.stringify(state))
+  getStorage()?.setItem(SAVE_KEY, JSON.stringify(state))
 }
 
 export function loadGame(): GameState | null {
-  const saved = localStorage.getItem(SAVE_KEY)
+  const saved = getStorage()?.getItem(SAVE_KEY)
 
   if (!saved) {
     return null
@@ -21,5 +33,5 @@ export function loadGame(): GameState | null {
 }
 
 export function clearSavedGame(): void {
-  localStorage.removeItem(SAVE_KEY)
+  getStorage()?.removeItem(SAVE_KEY)
 }

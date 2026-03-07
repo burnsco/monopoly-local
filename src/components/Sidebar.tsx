@@ -74,7 +74,7 @@ export function BottomBar() {
     rollDice,
     endTurn,
     payBail, 
-    useGetOutOfJail, 
+    playGetOutOfJailCard, 
     settleDebt, 
     declareBankruptcy, 
     placeBid, 
@@ -144,9 +144,9 @@ export function BottomBar() {
              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                <span style={{ fontSize: '0.8rem', fontWeight: 800 }}>JAIL:</span>
                <button className="btn-nm" style={{ padding: '0.4rem 0.8rem' }} onClick={payBail} disabled={currentPlayer.money < game.settings.bailAmount}>
-                 Pay $50
+                 {`Pay $${game.settings.bailAmount}`}
                </button>
-               <button className="btn-nm" style={{ padding: '0.4rem 0.8rem' }} onClick={useGetOutOfJail} disabled={currentPlayer.getOutOfJailCards.length === 0}>
+               <button className="btn-nm" style={{ padding: '0.4rem 0.8rem' }} onClick={playGetOutOfJailCard} disabled={currentPlayer.getOutOfJailCards.length === 0}>
                  Use Card
                </button>
              </div>

@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { BOARD_SPACES, colorGroupColor } from '../game/data/board'
+import { getSpaceMoneyLabel } from '../game/selectors'
 import { useGameStore } from '../game/store'
-import { renderSpaceMoney } from './PropertyManager'
 import { TokenIcon } from './TokenIcon'
 
 interface GridPosition {
@@ -46,31 +46,31 @@ export function GameBoard() {
               onClick={() => setSelectedSpace(space.index)}
             >
               {space.type === 'property' ? (
-                <div className="space-color-band" style={{ background: colorGroupColor[space.colorGroup], height: '25%', width: '100%' }} />
+                <div className="space-color-band" style={{ background: colorGroupColor[space.colorGroup] }} />
               ) : null}
 
               <div className="space-content">
                 <div className="space-name">{space.name}</div>
-                <div className="space-meta">{renderSpaceMoney(space.index)}</div>
+                <div className="space-meta">{getSpaceMoneyLabel(space.index)}</div>
+              </div>
 
-                <div className="token-stack">
-                  <AnimatePresence mode="popLayout">
-                    {tokensOnSpace.map((player) => (
-                      <motion.span
-                        key={player.id}
-                        layoutId={`player-token-${player.id}`}
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0, opacity: 0 }}
-                        transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-                        className="token-chip"
-                        style={{ background: player.color }}
-                      >
-                        <TokenIcon name={player.token} size={10} strokeWidth={3} />
-                      </motion.span>
-                    ))}
-                  </AnimatePresence>
-                </div>
+              <div className="token-stack">
+                <AnimatePresence mode="popLayout">
+                  {tokensOnSpace.map((player) => (
+                    <motion.span
+                      key={player.id}
+                      layoutId={`player-token-${player.id}`}
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+                      className="token-chip"
+                      style={{ background: player.color }}
+                    >
+                      <TokenIcon name={player.token} size={10} strokeWidth={3} />
+                    </motion.span>
+                  ))}
+                </AnimatePresence>
               </div>
             </div>
           )

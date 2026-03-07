@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { COLOR_OPTIONS, TOKEN_OPTIONS } from '../game/setup'
 import type { PlayerSetup } from '../game/types'
 import { TokenIcon } from './TokenIcon'
@@ -18,21 +18,24 @@ function createDefaults(count: number): PlayerSetup[] {
   }))
 }
 
+function resizePlayers(players: PlayerSetup[], count: number): PlayerSetup[] {
+  const defaults = createDefaults(count)
+  return defaults.map((fallback, index) => players[index] ?? fallback)
+}
+
 export function SetupScreen({ hasSavedGame, onStart, onLoadSaved, onClearSaved }: SetupScreenProps) {
   const [playerCount, setPlayerCount] = useState(4)
   const [players, setPlayers] = useState<PlayerSetup[]>(() => createDefaults(4))
 
-  useEffect(() => {
-    setPlayers((current) => {
-      if (current.length === playerCount) return current
-      const defaults = createDefaults(playerCount)
-      return defaults.map((fallback, index) => current[index] ?? fallback)
-    })
-  }, [playerCount])
-
   const tokensUnique = useMemo(() => new Set(players.map((p) => p.token)).size === players.length, [players])
   const colorsUnique = useMemo(() => new Set(players.map((p) => p.color)).size === players.length, [players])
   const canStart = tokensUnique && colorsUnique && players.length >= 2
+
+  function updatePlayer(index: number, changes: Partial<PlayerSetup>) {
+    setPlayers((current) => current.map((player, playerIndex) => (
+      playerIndex === index ? { ...player, ...changes } : player
+    )))
+  }
 
   return (
     <div className="setup-screen nm-flat">
@@ -48,7 +51,16 @@ export function SetupScreen({ hasSavedGame, onStart, onLoadSaved, onClearSaved }
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <div className="field">
             <span style={{ fontSize: '1.2rem', fontWeight: 700 }}>Player Count</span>
-            <select className="btn-nm" style={{ padding: '0.5rem 1rem' }} value={playerCount} onChange={(e) => setPlayerCount(Number(e.target.value))}>
+            <select
+              className="btn-nm"
+              style={{ padding: '0.5rem 1rem' }}
+              value={playerCount}
+              onChange={(e) => {
+                const nextCount = Number(e.target.value)
+                setPlayerCount(nextCount)
+                setPlayers((current) => resizePlayers(current, nextCount))
+              }}
+            >
               {[2, 3, 4, 5, 6, 7, 8].map(n => <option key={n} value={n}>{n} Players</option>)}
             </select>
           </div>
@@ -83,11 +95,7 @@ export function SetupScreen({ hasSavedGame, onStart, onLoadSaved, onClearSaved }
                     className="nm-inset"
                     style={{ background: 'transparent', border: 'none', padding: '0.8rem', borderRadius: '15px', color: 'var(--nm-text)', fontWeight: 700 }}
                     value={player.name}
-                    onChange={(e) => {
-                      const next = [...players]
-                      next[index] = { ...player, name: e.target.value }
-                      setPlayers(next)
-                    }}
+                    onChange={(e) => updatePlayer(index, { name: e.target.value })}
                     maxLength={18}
                   />
                 </div>
@@ -98,11 +106,7 @@ export function SetupScreen({ hasSavedGame, onStart, onLoadSaved, onClearSaved }
                     className="nm-inset"
                     style={{ background: 'transparent', border: 'none', padding: '0.8rem', borderRadius: '15px', color: 'var(--nm-text)', fontWeight: 700 }}
                     value={player.token}
-                    onChange={(e) => {
-                      const next = [...players]
-                      next[index] = { ...player, token: e.target.value }
-                      setPlayers(next)
-                    }}
+                    onChange={(e) => updatePlayer(index, { token: e.target.value })}
                   >
                     {TOKEN_OPTIONS.map(token => (
                       <option key={token} value={token} disabled={takenTokens.includes(token)}>{token}</option>
@@ -116,11 +120,7 @@ export function SetupScreen({ hasSavedGame, onStart, onLoadSaved, onClearSaved }
                     className="nm-inset"
                     style={{ background: 'transparent', border: 'none', padding: '0.8rem', borderRadius: '15px', color: 'var(--nm-text)', fontWeight: 700 }}
                     value={player.color}
-                    onChange={(e) => {
-                      const next = [...players]
-                      next[index] = { ...player, color: e.target.value }
-                      setPlayers(next)
-                    }}
+                    onChange={(e) => updatePlayer(index, { color: e.target.value })}
                   >
                     {COLOR_OPTIONS.map(color => (
                       <option key={color} value={color} disabled={takenColors.includes(color)}>{color}</option>

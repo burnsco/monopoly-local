@@ -1,4 +1,4 @@
-import { BOARD_SPACES, colorGroupColor, colorGroupLabel } from '../game/data/board'
+import { colorGroupColor, colorGroupLabel } from '../game/data/board'
 import { getBuildActions, getGroupStatus } from '../game/engine'
 import { getOwnedPropertyIds, getPropertyLevel, getSpace } from '../game/selectors'
 import type { GameState } from '../game/types'
@@ -93,15 +93,4 @@ export function PropertyManager({
       </div>
     </section>
   )
-}
-
-export function renderSpaceMoney(spaceIndex: number): string {
-  const space = BOARD_SPACES[spaceIndex]
-  if ('price' in space) {
-    return `$${space.price}`
-  }
-  if (space.type === 'tax') {
-    return `$${space.amount}`
-  }
-  return ''
 }

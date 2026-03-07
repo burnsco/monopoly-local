@@ -9,13 +9,13 @@ import {
   endTurn,
   mortgageProperty,
   payBail,
+  playGetOutOfJailCard,
   placeAuctionBid,
   rollDiceForCurrentPlayer,
   selectSpace,
   sellBuilding,
   settleDebtIfPossible,
   unmortgageProperty,
-  useGetOutOfJail,
   passAuctionTurn,
 } from './engine'
 import { createGame } from './setup'
@@ -38,7 +38,7 @@ interface GameStore {
   
   advanceMovement: () => void
   payBail: () => void
-  useGetOutOfJail: () => void
+  playGetOutOfJailCard: () => void
   buyProperty: () => void
   declineProperty: () => void
   acknowledgeCard: () => void
@@ -72,7 +72,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   loadSavedGame: () => {
     const saved = loadGame()
-    if (saved) set({ game: saved })
+    if (saved) set({ game: saved, hasSavedGame: true })
   },
 
   clearSavedGame: () => {
@@ -110,10 +110,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
     saveGame(nextGame)
   },
 
-  useGetOutOfJail: () => {
+  playGetOutOfJailCard: () => {
     const { game } = get()
     if (!game) return
-    const nextGame = useGetOutOfJail(game)
+    const nextGame = playGetOutOfJailCard(game)
     set({ game: nextGame })
     saveGame(nextGame)
   },

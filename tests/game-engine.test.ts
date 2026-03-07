@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { acknowledgeCard, buildHouseOrHotel, buyPendingProperty, getBuildActions } from '../src/game/engine'
+import { acknowledgeCard, buildHouseOrHotel, buyPendingProperty, getBuildActions, playGetOutOfJailCard } from '../src/game/engine'
 import { createGame } from '../src/game/setup'
 import type { GameState } from '../src/game/types'
 
@@ -64,5 +64,29 @@ describe('game engine', () => {
     expect(afterFirstBuild.deeds[1].houses).toBe(1)
     expect(firstActions.canBuild).toBe(false)
     expect(secondActions.canBuild).toBe(true)
+  })
+
+  it('uses a get out of jail card without consuming the roll phase', () => {
+    const game = withGame((state) => ({
+      ...state,
+      players: state.players.map((player, index) => (
+        index === 0
+          ? {
+              ...player,
+              inJail: true,
+              jailTurns: 2,
+              getOutOfJailCards: ['chance'],
+            }
+          : player
+      )),
+    }))
+
+    const next = playGetOutOfJailCard(game)
+
+    expect(next.players[0].inJail).toBe(false)
+    expect(next.players[0].jailTurns).toBe(0)
+    expect(next.players[0].getOutOfJailCards).toEqual([])
+    expect(next.decks.chance.discardPile).toContain('chance-get-out')
+    expect(next.phase).toBe('await_roll')
   })
 })

@@ -28,6 +28,7 @@
   --pink: #D93B96;
   --cyan: #BEEBF1;
   --brown: #955436;
+  --bottom-bar-height: 80px;
 }
 
 body {
@@ -67,6 +68,8 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  min-width: 0;
+  min-height: 0;
   overflow: hidden;
   position: relative;
 }
@@ -109,30 +112,24 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #2F1B12; /* Dark wood-like color */
-  background-image: 
-    linear-gradient(45deg, rgba(0,0,0,0.1) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.1) 75%, rgba(0,0,0,0.1)), 
-    linear-gradient(45deg, rgba(0,0,0,0.1) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.1) 75%, rgba(0,0,0,0.1));
-  background-size: 40px 40px;
-  background-position: 0 0, 20px 20px;
+  background-color: var(--bg-color);
   overflow: hidden;
-  padding: 2.5rem;
+  padding: 0;
   box-sizing: border-box;
 }
 
 .board-grid {
   display: grid;
-  grid-template-columns: 1.5fr repeat(9, 1fr) 1.5fr;
-  grid-template-rows: 1.5fr repeat(9, 1fr) 1.5fr;
-  width: 100%;
-  height: 100%;
+  grid-template-columns: 2.5fr repeat(9, 1.2fr) 2.5fr;
+  grid-template-rows: 2.5fr repeat(9, 1.2fr) 2.5fr;
+  width: min(calc(100vw - 200px), calc(100vh - var(--bottom-bar-height)));
+  height: min(calc(100vw - 200px), calc(100vh - var(--bottom-bar-height)));
   max-width: 100%;
   max-height: 100%;
   aspect-ratio: 1 / 1;
-  background-color: #111; /* Gap line color */
+  background-color: #111;
   gap: 2px;
-  border: clamp(8px, 1.5vh, 16px) solid #CDE6D0; /* Classic pale green outer rim */
-  box-shadow: 0 0 0 2px #111, 0 15px 40px rgba(0,0,0,0.5);
+  border: 4px solid #111;
   border-radius: 4px;
   box-sizing: border-box;
 }
@@ -143,6 +140,7 @@ body {
   background-color: #CDE6D0; /* Match outer rim and classic board */
   border: none;
   display: flex;
+  flex-direction: column;
   position: relative;
   cursor: pointer;
   transition: filter 0.2s;
@@ -169,24 +167,31 @@ body {
   justify-content: flex-start;
   align-items: center;
   position: relative;
+  padding: 10% 4%;
 }
 
-/* Side-specific layout logic */
+/* Side-specific layout logic - Color bands always face the center */
 
 .side-bottom { flex-direction: column; }
 .side-bottom .space-color-band { height: 25%; width: 100%; border-bottom: 2px solid #111; }
 
-.side-left { flex-direction: row-reverse; }
-.side-left .space-color-band { width: 25%; height: 100%; border-right: 2px solid #111; }
-.side-left .space-content { transform: rotate(90deg); width: 100%; height: 100%; position: absolute; }
-
 .side-top { flex-direction: column-reverse; }
 .side-top .space-color-band { height: 25%; width: 100%; border-top: 2px solid #111; }
-.side-top .space-content { transform: rotate(180deg); }
+.side-top .space-content {
+  transform: rotate(180deg);
+}
+
+.side-left { flex-direction: row-reverse; }
+.side-left .space-color-band { width: 25%; height: 100%; border-left: 2px solid #111; }
+.side-left .space-content {
+  transform: rotate(90deg);
+}
 
 .side-right { flex-direction: row; }
-.side-right .space-color-band { width: 25%; height: 100%; border-left: 2px solid #111; }
-.side-right .space-content { transform: rotate(-90deg); width: 100%; height: 100%; position: absolute; }
+.side-right .space-color-band { width: 25%; height: 100%; border-right: 2px solid #111; }
+.side-right .space-content {
+  transform: rotate(-90deg);
+}
 
 .side-corner { flex-direction: column; background-color: #CDE6D0; }
 .side-corner .space-content { justify-content: center; align-items: center; padding: 4px; }
@@ -198,7 +203,7 @@ body {
   text-transform: uppercase;
   text-align: center;
   line-height: 1.1;
-  margin: 8px 0;
+  margin: 6px;
   width: 90%;
   word-wrap: break-word;
 }
@@ -211,6 +216,12 @@ body {
   margin-top: auto;
   margin-bottom: 12%;
   opacity: 0.9;
+}
+
+/* Side top and bottom overrides for meta margin */
+.side-bottom .space-meta,
+.side-top .space-meta {
+  margin: auto 0 12% 0;
 }
 
 /* ── Board Center (Dashboard) ──────────────────────────────── */
@@ -306,11 +317,14 @@ body {
   flex-wrap: wrap;
   gap: 2px;
   justify-content: center;
+  align-items: center;
   position: absolute;
-  bottom: 5%;
-  left: 0;
-  right: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
   z-index: 5;
+  pointer-events: none;
 }
 
 .token-chip {
@@ -327,7 +341,7 @@ body {
 /* ── Bottom Bar ────────────────────────────────────────────── */
 
 .bottom-bar {
-  height: 80px;
+  height: var(--bottom-bar-height);
   background-color: var(--bg-color);
   border-top: 2px solid var(--nm-dark);
   display: flex;
