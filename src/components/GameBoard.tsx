@@ -1,52 +1,59 @@
-import { motion, AnimatePresence } from 'framer-motion'
-import { BOARD_SPACES, colorGroupColor } from '../game/data/board'
-import { getSpaceMoneyLabel } from '../game/selectors'
-import { useGameStore } from '../game/store'
-import { TokenIcon } from './TokenIcon'
+import { motion, AnimatePresence } from "framer-motion";
+import { BOARD_SPACES, colorGroupColor } from "../game/data/board";
+import { getSpaceMoneyLabel } from "../game/selectors";
+import { useGameStore } from "../game/store";
+import { TokenIcon } from "./TokenIcon";
 
 interface GridPosition {
-  row: number
-  column: number
+  row: number;
+  column: number;
 }
 
 function getBoardPosition(index: number): GridPosition {
-  if (index <= 10) return { row: 11, column: 11 - index }
-  if (index <= 19) return { row: 11 - (index - 10), column: 1 }
-  if (index === 20) return { row: 1, column: 1 }
-  if (index <= 29) return { row: 1, column: index - 19 }
-  if (index === 30) return { row: 1, column: 11 }
-  return { row: index - 29, column: 11 }
+  if (index <= 10) return { row: 11, column: 11 - index };
+  if (index <= 19) return { row: 11 - (index - 10), column: 1 };
+  if (index === 20) return { row: 1, column: 1 };
+  if (index <= 29) return { row: 1, column: index - 19 };
+  if (index === 30) return { row: 1, column: 11 };
+  return { row: index - 29, column: 11 };
 }
 
 function getSideClass(index: number) {
-  if (index === 0 || index === 10 || index === 20 || index === 30) return 'side-corner'
-  if (index > 0 && index < 10) return 'side-bottom'
-  if (index > 10 && index < 20) return 'side-left'
-  if (index > 20 && index < 30) return 'side-top'
-  return 'side-right'
+  if (index === 0 || index === 10 || index === 20 || index === 30) return "side-corner";
+  if (index > 0 && index < 10) return "side-bottom";
+  if (index > 10 && index < 20) return "side-left";
+  if (index > 20 && index < 30) return "side-top";
+  return "side-right";
 }
 
 export function GameBoard() {
-  const { game, setSelectedSpace } = useGameStore()
-  if (!game) return null
+  const { game, setSelectedSpace } = useGameStore();
+  if (!game) return null;
 
   return (
     <section className="board-shell">
       <div className="board-grid">
         {BOARD_SPACES.map((space) => {
-          const tokensOnSpace = game.players.filter((player) => !player.bankrupt && player.position === space.index)
-          const position = getBoardPosition(space.index)
-          const side = getSideClass(space.index)
+          const tokensOnSpace = game.players.filter(
+            (player) => !player.bankrupt && player.position === space.index,
+          );
+          const position = getBoardPosition(space.index);
+          const side = getSideClass(space.index);
 
           return (
             <div
               key={space.index}
-              className={`space-cell ${side} ${game.selectedSpace === space.index ? 'selected' : ''}`}
+              className={`space-cell ${side} ${game.selectedSpace === space.index ? "selected" : ""}`}
               style={{ gridRow: position.row, gridColumn: position.column }}
-              onClick={() => setSelectedSpace(space.index)}
+              onClick={() =>
+                setSelectedSpace(game.selectedSpace === space.index ? null : space.index)
+              }
             >
-              {space.type === 'property' ? (
-                <div className="space-color-band" style={{ background: colorGroupColor[space.colorGroup] }} />
+              {space.type === "property" ? (
+                <div
+                  className="space-color-band"
+                  style={{ background: colorGroupColor[space.colorGroup] }}
+                />
               ) : null}
 
               <div className="space-content">
@@ -63,7 +70,7 @@ export function GameBoard() {
                       initial={{ scale: 0, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       exit={{ scale: 0, opacity: 0 }}
-                      transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+                      transition={{ type: "spring", stiffness: 200, damping: 20 }}
                       className="token-chip"
                       style={{ background: player.color }}
                     >
@@ -73,20 +80,24 @@ export function GameBoard() {
                 </AnimatePresence>
               </div>
             </div>
-          )
+          );
         })}
 
         <div className="board-center">
           <div className="center-bg-m">M</div>
-          
+
           <div className="card-deck deck-chance">CHANCE</div>
           <div className="card-deck deck-chest">
-            <span className="deck-chest-text">COMMUNITY<br/>CHEST</span>
+            <span className="deck-chest-text">
+              COMMUNITY
+              <br />
+              CHEST
+            </span>
           </div>
-          
+
           <h1 className="center-logo">MONOPOLY</h1>
         </div>
       </div>
     </section>
-  )
+  );
 }

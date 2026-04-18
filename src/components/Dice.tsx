@@ -1,9 +1,11 @@
-import { useRef, useEffect } from 'react'
-import { gsap } from 'gsap'
-import './Dice.css'
+import { useRef, useEffect } from "react";
+import { gsap } from "gsap";
+import "./Dice.css";
+
+const DOT_POSITIONS = Array.from({ length: 9 }, (_, index) => `dot-${index}`);
 
 export function Die({ value, rolling }: { value: number; rolling: boolean }) {
-  const dieRef = useRef<HTMLDivElement>(null)
+  const dieRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (rolling && dieRef.current) {
@@ -11,13 +13,13 @@ export function Die({ value, rolling }: { value: number; rolling: boolean }) {
         rotate: 360,
         duration: 0.2,
         repeat: -1,
-        ease: "none"
-      })
+        ease: "none",
+      });
     } else if (dieRef.current) {
-      gsap.killTweensOf(dieRef.current)
-      gsap.to(dieRef.current, { rotate: 0, duration: 0.3 })
+      gsap.killTweensOf(dieRef.current);
+      gsap.to(dieRef.current, { rotate: 0, duration: 0.3 });
     }
-  }, [rolling])
+  }, [rolling]);
 
   const dotIndices = [
     [4], // 1
@@ -26,19 +28,19 @@ export function Die({ value, rolling }: { value: number; rolling: boolean }) {
     [0, 2, 6, 8], // 4
     [0, 2, 4, 6, 8], // 5
     [0, 2, 3, 5, 6, 8], // 6
-  ]
+  ];
 
-  const activeDots = dotIndices[value - 1] || []
+  const activeDots = dotIndices[value - 1] || [];
 
   return (
     <div ref={dieRef} className="die-face nm-flat">
       <div className="die-dots-grid">
-        {Array.from({ length: 9 }).map((_, i) => (
-          <div key={i} className={activeDots.includes(i) ? 'die-dot' : ''} />
+        {DOT_POSITIONS.map((dotKey, index) => (
+          <div key={dotKey} className={activeDots.includes(index) ? "die-dot" : ""} />
         ))}
       </div>
     </div>
-  )
+  );
 }
 
 export function DiceDisplay({ values, rolling }: { values: readonly number[]; rolling: boolean }) {
@@ -47,5 +49,5 @@ export function DiceDisplay({ values, rolling }: { values: readonly number[]; ro
       <Die value={values[0] || 1} rolling={rolling} />
       <Die value={values[1] || 1} rolling={rolling} />
     </div>
-  )
+  );
 }

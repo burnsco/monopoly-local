@@ -1,15 +1,16 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
-import './App.css'
-import { GameBoard } from './components/GameBoard'
-import { SetupScreen } from './components/SetupScreen'
-import { LeftSidebar, BottomBar } from './components/Sidebar'
-import { useGameStore } from './game/store'
-import { getPropertyDetailsSummary, getSpace } from './game/selectors'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import "./App.css";
+import { GameBoard } from "./components/GameBoard";
+import { SetupScreen } from "./components/SetupScreen";
+import { LeftSidebar, BottomBar } from "./components/Sidebar";
+import { DebugPanel } from "./components/DebugPanel";
+import { useGameStore } from "./game/store";
+import { getPropertyDetailsSummary, getSpace } from "./game/selectors";
 
 const Celebration = lazy(async () => {
-  const module = await import('./components/Celebration')
-  return { default: module.Celebration }
-})
+  const module = await import("./components/Celebration");
+  return { default: module.Celebration };
+});
 
 function App() {
   const {
@@ -22,56 +23,59 @@ function App() {
     buyProperty,
     declineProperty,
     acknowledgeCard,
-  } = useGameStore()
+  } = useGameStore();
 
-  const [toast, setToast] = useState<{ id: number; message: string } | null>(null)
-  const logLengthRef = useRef(0)
-  const showToastTimerRef = useRef<number | undefined>(undefined)
-  const toastTimerRef = useRef<number | undefined>(undefined)
-  const latestLogEntry = useMemo(() => game?.log.at(-1) ?? null, [game?.log])
+  const [toast, setToast] = useState<{ id: number; message: string } | null>(null);
+  const logLengthRef = useRef(0);
+  const showToastTimerRef = useRef<number | undefined>(undefined);
+  const toastTimerRef = useRef<number | undefined>(undefined);
+  const latestLogEntry = useMemo(() => game?.log.at(-1) ?? null, [game?.log]);
 
   // Auto-advance movement
   useEffect(() => {
-    if (!game || game.phase !== 'moving' || !game.move) {
-      return undefined
+    if (!game || game.phase !== "moving" || !game.move) {
+      return undefined;
     }
 
     const timeout = window.setTimeout(() => {
-      advanceMovement()
-    }, 250)
+      advanceMovement();
+    }, 250);
 
-    return () => window.clearTimeout(timeout)
-  }, [game, advanceMovement])
+    return () => window.clearTimeout(timeout);
+  }, [game, advanceMovement]);
 
   // Toast notifications for game log
   useEffect(() => {
-    if (!game || game.log.length === 0 || !latestLogEntry) return
+    if (!game || game.log.length === 0 || !latestLogEntry) return;
     if (game.log.length <= logLengthRef.current) {
-      logLengthRef.current = game.log.length
-      return
+      logLengthRef.current = game.log.length;
+      return;
     }
     const nextToast = {
       id: game.log.length,
       message: latestLogEntry,
-    }
+    };
 
-    logLengthRef.current = game.log.length
-    window.clearTimeout(showToastTimerRef.current)
-    window.clearTimeout(toastTimerRef.current)
+    logLengthRef.current = game.log.length;
+    window.clearTimeout(showToastTimerRef.current);
+    window.clearTimeout(toastTimerRef.current);
     showToastTimerRef.current = window.setTimeout(() => {
-      setToast(nextToast)
-      toastTimerRef.current = window.setTimeout(() => setToast(null), 3000)
-    }, 0)
+      setToast(nextToast);
+      toastTimerRef.current = window.setTimeout(() => setToast(null), 3000);
+    }, 0);
 
     return () => {
-      window.clearTimeout(showToastTimerRef.current)
-    }
-  }, [game, latestLogEntry])
+      window.clearTimeout(showToastTimerRef.current);
+    };
+  }, [game, latestLogEntry]);
 
-  useEffect(() => () => {
-    window.clearTimeout(showToastTimerRef.current)
-    window.clearTimeout(toastTimerRef.current)
-  }, [])
+  useEffect(
+    () => () => {
+      window.clearTimeout(showToastTimerRef.current);
+      window.clearTimeout(toastTimerRef.current);
+    },
+    [],
+  );
 
   if (!game) {
     return (
@@ -81,15 +85,22 @@ function App() {
         onLoadSaved={loadSavedGame}
         onClearSaved={clearSavedGame}
       />
-    )
+    );
   }
 
-  const currentPlayer = game.players[game.currentPlayerIndex]
-  const pendingPurchaseSpace = game.pendingPurchase ? getSpace(game.pendingPurchase.propertyId) : null
-  const winnerName = game.players.find((player) => player.id === game.winnerId)?.name
+  const currentPlayer = game.players[game.currentPlayerIndex];
+  const pendingPurchaseSpace = game.pendingPurchase
+    ? getSpace(game.pendingPurchase.propertyId)
+    : null;
+  const winnerName = game.players.find((player) => player.id === game.winnerId)?.name;
+  const pendingPurchasePrice =
+    pendingPurchaseSpace && "price" in pendingPurchaseSpace ? pendingPurchaseSpace.price : null;
+  const remainingCashAfterPurchase =
+    pendingPurchasePrice === null ? null : currentPlayer.money - pendingPurchasePrice;
 
   return (
     <>
+      <DebugPanel />
       <div className="app-shell">
         <LeftSidebar />
         <main className="main-content">
@@ -98,24 +109,32 @@ function App() {
         </main>
       </div>
 
-      {toast && (
-        <div className="toast glass nm-flat">
-          {toast.message}
-        </div>
-      )}
+      {toast && <div className="toast glass nm-flat">{toast.message}</div>}
 
       {/* Modern Glassmorphism Modals */}
-      {game.phase === 'await_purchase' && pendingPurchaseSpace && (
+      {game.phase === "await_purchase" && pendingPurchaseSpace && (
         <div className="modal-overlay">
           <div className="modal-content glass nm-convex">
             <h2 className="modal-title">Buy {pendingPurchaseSpace.name}?</h2>
             <div className="modal-body">
               <p>{getPropertyDetailsSummary(game, pendingPurchaseSpace.index)}</p>
-              {'rent' in pendingPurchaseSpace ? (
-                <p className="muted-text">{`Rent scale: ${pendingPurchaseSpace.rent.join(' / ')}`}</p>
+              {"rent" in pendingPurchaseSpace ? (
+                <p className="muted-text">{`Rent scale: ${pendingPurchaseSpace.rent.join(" / ")}`}</p>
               ) : (
-                <p className="muted-text">Railroads and utilities have dynamic rent based on ownership and dice.</p>
+                <p className="muted-text">
+                  Railroads and utilities have dynamic rent based on ownership and dice.
+                </p>
               )}
+              {pendingPurchasePrice !== null ? (
+                <>
+                  <p className="muted-text">{`Cost: $${pendingPurchasePrice}`}</p>
+                  <p className="muted-text">
+                    {remainingCashAfterPurchase !== null && remainingCashAfterPurchase >= 0
+                      ? `Cash after purchase: $${remainingCashAfterPurchase}`
+                      : "You cannot currently afford this property."}
+                  </p>
+                </>
+              ) : null}
             </div>
             <div className="modal-footer">
               <button type="button" className="btn-nm" onClick={declineProperty}>
@@ -125,19 +144,24 @@ function App() {
                 type="button"
                 className="btn-nm btn-primary"
                 onClick={buyProperty}
-                disabled={!('price' in pendingPurchaseSpace) || currentPlayer.money < pendingPurchaseSpace.price}
+                disabled={
+                  !("price" in pendingPurchaseSpace) ||
+                  currentPlayer.money < pendingPurchaseSpace.price
+                }
               >
-                {'price' in pendingPurchaseSpace ? `Buy ($${pendingPurchaseSpace.price})` : 'Buy'}
+                {"price" in pendingPurchaseSpace ? `Buy ($${pendingPurchaseSpace.price})` : "Buy"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {game.phase === 'show_card' && game.pendingCard && (
+      {game.phase === "show_card" && game.pendingCard && (
         <div className="modal-overlay">
           <div className="modal-content glass nm-convex">
-            <h2 className="modal-title">{game.pendingCard.deck === 'chance' ? 'Chance' : 'Community Chest'}</h2>
+            <h2 className="modal-title">
+              {game.pendingCard.deck === "chance" ? "Chance" : "Community Chest"}
+            </h2>
             <div className="modal-body">
               <p>{game.pendingCard.description}</p>
             </div>
@@ -171,7 +195,7 @@ function App() {
         </>
       )}
     </>
-  )
+  );
 }
 
-export default App
+export default App;
