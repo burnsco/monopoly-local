@@ -1424,7 +1424,6 @@ export function endTurn(state: GameState): GameState {
       extraTurn: false,
       dice: null,
       lastRollTotal: null,
-      doublesRolledThisTurn: 0,
     };
   }
 

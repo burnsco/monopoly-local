@@ -234,7 +234,7 @@ export function SetupScreen({
 
         <div style={{ marginTop: "3rem", textAlign: "center" }}>
           {(!tokensUnique || !colorsUnique) && (
-            <p style={{ color: "#e53e3e", marginBottom: "1rem" }}>
+            <p style={{ color: "var(--danger-red)", marginBottom: "1rem" }}>
               Each player needs a unique token and color.
             </p>
           )}

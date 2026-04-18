@@ -92,7 +92,7 @@ export function BottomBar() {
   const highestBidder = highestBidderId ? (getPlayerById(game, highestBidderId) ?? null) : null;
   const auctionSpace = pendingAuction ? getSpace(pendingAuction.propertyId) : null;
   const reversedLog = game.log.map((entry, index) => ({ entry, key: `log-${index}` })).toReversed();
-  const latestLogEntry = reversedLog[0]?.entry ?? null;
+  const latestLogEntry = game.log.at(-1) ?? null;
   const jailStatus = currentPlayer.inJail
     ? `Attempt ${Math.min(currentPlayer.jailTurns + 1, 3)} of 3 to roll doubles`
     : null;
@@ -224,7 +224,7 @@ export function BottomBar() {
 
           {game.phase === "manage_debt" && game.pendingDebt && (
             <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-              <span style={{ fontSize: "0.8rem", fontWeight: 800, color: "#e53e3e" }}>
+              <span style={{ fontSize: "0.8rem", fontWeight: 800, color: "var(--danger-red)" }}>
                 DEBT: ${game.pendingDebt.amount}
               </span>
               <span style={{ fontSize: "0.72rem", opacity: 0.75, maxWidth: "220px" }}>
@@ -240,7 +240,7 @@ export function BottomBar() {
               </button>
               <button
                 className="btn-nm btn-danger"
-                style={{ padding: "0.4rem 0.8rem", background: "#e53e3e", color: "white" }}
+                style={{ padding: "0.4rem 0.8rem" }}
                 onClick={declareBankruptcy}
               >
                 Bankrupt

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   acknowledgeCard,
+  applyRoll,
   buildHouseOrHotel,
   buyPendingProperty,
   getBuildActions,
@@ -9,7 +10,7 @@ import {
 } from "../src/game/engine";
 import { endTurn } from "../src/game/engine";
 import { createGame } from "../src/game/setup";
-import type { GameState } from "../src/game/types";
+import type { DiceTuple, GameState } from "../src/game/types";
 
 function withGame(mutator: (state: GameState) => GameState): GameState {
   return mutator(
@@ -97,7 +98,7 @@ describe("game engine", () => {
     expect(next.phase).toBe("await_roll");
   });
 
-  it("resets the doubles counter before an earned extra turn starts", () => {
+  it("preserves the doubles counter when an earned extra turn starts", () => {
     const game = withGame((state) => ({
       ...state,
       phase: "await_end_turn",
@@ -111,8 +112,43 @@ describe("game engine", () => {
 
     expect(next.phase).toBe("await_roll");
     expect(next.extraTurn).toBe(false);
-    expect(next.doublesRolledThisTurn).toBe(0);
+    expect(next.doublesRolledThisTurn).toBe(2);
     expect(next.dice).toBeNull();
     expect(next.lastRollTotal).toBeNull();
+  });
+
+  it("sends a player to jail after three doubles in a row across extra turns", () => {
+    const rollDoublesAndKeepTurn = (state: GameState, dice: DiceTuple): GameState => {
+      const afterRoll = applyRoll(state, dice);
+      return endTurn({ ...afterRoll, phase: "await_end_turn", extraTurn: true });
+    };
+
+    const afterFirst = rollDoublesAndKeepTurn(
+      withGame((state) => state),
+      [3, 3],
+    );
+    const afterSecond = rollDoublesAndKeepTurn(afterFirst, [5, 5]);
+    const afterThird = applyRoll(afterSecond, [6, 6]);
+
+    const currentPlayer = afterThird.players[afterThird.currentPlayerIndex];
+    expect(currentPlayer.inJail).toBe(true);
+    expect(currentPlayer.position).toBe(10);
+    expect(afterThird.phase).toBe("await_end_turn");
+  });
+
+  it("resets the doubles counter when the turn passes to the next player", () => {
+    const game = withGame((state) => ({
+      ...state,
+      phase: "await_end_turn",
+      extraTurn: false,
+      doublesRolledThisTurn: 1,
+      dice: [4, 4],
+      lastRollTotal: 8,
+    }));
+
+    const next = endTurn(game);
+
+    expect(next.currentPlayerIndex).toBe(1);
+    expect(next.doublesRolledThisTurn).toBe(0);
   });
 });
