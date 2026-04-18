@@ -74,7 +74,7 @@ export function GameBoard() {
                       className="token-chip"
                       style={{ background: player.color }}
                     >
-                      <TokenIcon name={player.token} size={10} strokeWidth={3} />
+                      <TokenIcon name={player.token} size={20} />
                     </motion.span>
                   ))}
                 </AnimatePresence>

@@ -36,11 +36,8 @@ export function LeftSidebar() {
                 className={`player-card ${isActive ? "active" : ""} ${player.bankrupt ? "bankrupt" : ""}`}
               >
                 <div className="player-info">
-                  <div
-                    className="player-token-large"
-                    style={{ background: player.color, width: "20px", height: "20px" }}
-                  >
-                    <TokenIcon name={player.token} size={10} />
+                  <div className="player-token-large" style={{ background: player.color }}>
+                    <TokenIcon name={player.token} size={26} />
                   </div>
                   <div className="player-name">{player.name}</div>
                   <div className="player-money">${player.money}</div>
@@ -107,9 +104,9 @@ export function BottomBar() {
         <div className="status-indicator">
           <div
             className="player-token-large active-turn-pulse"
-            style={{ background: currentPlayer.color, width: "24px", height: "24px" }}
+            style={{ background: currentPlayer.color }}
           >
-            <TokenIcon name={currentPlayer.token} size={12} />
+            <TokenIcon name={currentPlayer.token} size={28} />
           </div>
           <div style={{ textAlign: "left" }}>
             <div

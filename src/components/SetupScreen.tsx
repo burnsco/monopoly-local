@@ -160,7 +160,7 @@ export function SetupScreen({
                     className="player-token-large"
                     style={{ background: player.color, width: "40px", height: "40px" }}
                   >
-                    <TokenIcon name={player.token} size={20} />
+                    <TokenIcon name={player.token} size={28} />
                   </div>
                 </div>
 

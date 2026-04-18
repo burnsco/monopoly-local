@@ -2,13 +2,15 @@ import { useMemo, useState } from "react";
 import type { CSSProperties } from "react";
 import { BOARD_SPACES } from "../game/data/board";
 import { CARD_LOOKUP } from "../game/data/cards";
+import { COLOR_OPTIONS, TOKEN_OPTIONS } from "../game/setup";
 import { useGameStore } from "../game/store";
 import type { AuctionState, DeckType, GameState, PendingCard } from "../game/types";
 
-const DEBUG_PLAYERS = [
-  { name: "A", token: "Anchor", color: "#e4572e" },
-  { name: "B", token: "CarFront", color: "#4f86f7" },
-];
+const DEBUG_PLAYERS = TOKEN_OPTIONS.map((token, index) => ({
+  name: String.fromCharCode(65 + index),
+  token,
+  color: COLOR_OPTIONS[index],
+}));
 
 function withLog(game: GameState, message: string): GameState {
   return {
