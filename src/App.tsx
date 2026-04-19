@@ -2,15 +2,62 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 import { GameBoard } from "./components/GameBoard";
 import { SetupScreen } from "./components/SetupScreen";
-import { LeftSidebar, BottomBar } from "./components/Sidebar";
+import { LeftSidebar, RightSidebar } from "./components/Sidebar";
 import { DebugPanel } from "./components/DebugPanel";
 import { useGameStore } from "./game/store";
 import { getPropertyDetailsSummary, getSpace } from "./game/selectors";
+import { playSound, soundForLogEntry } from "./game/audio";
+import type { GameState } from "./game/types";
 
 const Celebration = lazy(async () => {
   const module = await import("./components/Celebration");
   return { default: module.Celebration };
 });
+
+function useSoundEffects(game: GameState | null) {
+  const logLenRef = useRef(0);
+  const prevPhaseRef = useRef<string | null>(null);
+  const prevDiceRef = useRef<string | null>(null);
+  const prevStepsRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!game) return;
+
+    // Log-based sounds
+    if (game.log.length > logLenRef.current) {
+      const sound = soundForLogEntry(game.log.at(-1) ?? "");
+      if (sound) playSound(sound);
+      logLenRef.current = game.log.length;
+    }
+
+    // Doubles detection (after dice roll)
+    if (game.dice) {
+      const key = game.dice.join(",");
+      if (key !== prevDiceRef.current) {
+        prevDiceRef.current = key;
+        if (game.dice[0] === game.dice[1]) {
+          setTimeout(() => playSound("doubles"), 350);
+        }
+      }
+    }
+
+    // Card draw on phase change
+    if (game.phase === "show_card" && prevPhaseRef.current !== "show_card") {
+      playSound("cardDraw");
+    }
+    prevPhaseRef.current = game.phase;
+
+    // Movement step sounds
+    if (game.phase === "moving" && game.move) {
+      if (game.move.stepsRemaining !== prevStepsRef.current) {
+        prevStepsRef.current = game.move.stepsRemaining;
+        playSound("movementStep");
+      }
+    } else {
+      prevStepsRef.current = null;
+    }
+  }, [game]);
+}
 
 function App() {
   const {
@@ -24,6 +71,8 @@ function App() {
     declineProperty,
     acknowledgeCard,
   } = useGameStore();
+
+  useSoundEffects(game);
 
   const [toast, setToast] = useState<{ id: number; message: string } | null>(null);
   const logLengthRef = useRef(0);
@@ -105,8 +154,8 @@ function App() {
         <LeftSidebar />
         <main className="main-content">
           <GameBoard />
-          <BottomBar />
         </main>
+        <RightSidebar />
       </div>
 
       {toast && <div className="toast glass nm-flat">{toast.message}</div>}
