@@ -3,6 +3,7 @@ import { BOARD_SPACES, colorGroupColor } from "../game/data/board";
 import { getSpaceMoneyLabel } from "../game/selectors";
 import { useGameStore } from "../game/store";
 import { TokenIcon } from "./TokenIcon";
+import type { GameState } from "../game/types";
 
 interface GridPosition {
   row: number;
@@ -26,6 +27,20 @@ function getSideClass(index: number) {
   return "side-right";
 }
 
+const CORNER_ICONS: Record<number, string> = {
+  0: "➡️",
+  10: "🔒",
+  20: "🅿️",
+  30: "🚔",
+};
+
+function getOwnerColor(game: GameState, spaceIndex: number): string | null {
+  const deed = game.deeds[spaceIndex];
+  if (!deed || !deed.ownerId) return null;
+  const owner = game.players.find((player) => player.id === deed.ownerId);
+  return owner?.color ?? null;
+}
+
 export function GameBoard() {
   const { game, setSelectedSpace } = useGameStore();
   if (!game) return null;
@@ -39,6 +54,8 @@ export function GameBoard() {
           );
           const position = getBoardPosition(space.index);
           const side = getSideClass(space.index);
+          const ownerColor = getOwnerColor(game, space.index);
+          const cornerIcon = CORNER_ICONS[space.index];
 
           return (
             <div
@@ -56,8 +73,15 @@ export function GameBoard() {
                 />
               ) : null}
 
+              {ownerColor && (
+                <div className="space-ownership-dot" style={{ background: ownerColor }} />
+              )}
+
               <div className="space-content">
                 <div className="space-name">{space.name}</div>
+                {cornerIcon && side === "side-corner" ? (
+                  <div className="space-corner-icon">{cornerIcon}</div>
+                ) : null}
                 <div className="space-meta">{getSpaceMoneyLabel(space.index)}</div>
               </div>
 
@@ -74,7 +98,7 @@ export function GameBoard() {
                       className="token-chip"
                       style={{ background: player.color }}
                     >
-                      <TokenIcon name={player.token} size={20} />
+                      <TokenIcon name={player.token} size={16} />
                     </motion.span>
                   ))}
                 </AnimatePresence>
